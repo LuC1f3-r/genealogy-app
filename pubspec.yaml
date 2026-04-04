@@ -1,0 +1,28 @@
+name: genealogy_app
+description: The Janvekar Family Tree — a digital heirloom archive.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  go_router: ^14.0.0
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10+1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+
+  # Fonts are loaded via google_fonts package at runtime.
+  # Place any local font files under assets/fonts/ if you prefer offline bundling.
