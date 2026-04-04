@@ -40,4 +40,32 @@ abstract final class AppColors {
 
   /// Use at ≤15% opacity only. Full-opacity borders violate the system.
   static const Color outlineVariant = Color(0xFFC3C8BE);
+
+  // ── Relationship-type line colors ──────────────────────────────────────────
+  /// Marriage connector — magenta heartline.
+  static const Color marriage = Color(0xFFD6527A);
+
+  /// Blood / parent-child — deep indigo-purple.
+  static const Color bloodLine = Color(0xFF6C63FF);
+
+  /// Adoptive child — muted slate (rendered dashed).
+  static const Color adoptiveLine = Color(0xFF94A3B8);
+
+  /// Divorced / break-up — warning red with X symbol.
+  static const Color divorceLine = Color(0xFFEF4444);
+
+  /// Heir connection — warm amber.
+  static const Color heirLine = Color(0xFFF59E0B);
+
+  /// Twins marker — teal accent.
+  static const Color twinsMarker = Color(0xFF14B8A6);
+
+  // ── Card gender tints ──────────────────────────────────────────────────────
+  static const Color maleCardStart   = Color(0xFF3A6B8A);
+  static const Color maleCardEnd     = Color(0xFF1E4A63);
+
+  static const Color femaleCardStart = Color(0xFF8A4A68);
+  static const Color femaleCardEnd   = Color(0xFF612843);
+
+  static const Color neutralCard     = Color(0xFF4A5A4A);
 }
