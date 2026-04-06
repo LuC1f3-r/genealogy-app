@@ -185,6 +185,43 @@ class FamilyTreeRepository {
     if (count > 0) await batch.commit();
   }
 
+  /// Deletes ALL existing persons then writes [nodes] from scratch.
+  /// Use when pushing an updated seed dataset to replace stale data.
+  Future<void> forceSeedData(
+      String treeId, List<PersonNode> nodes) async {
+    const batchLimit = 499;
+
+    // 1. Delete all existing person documents in pages.
+    var snap = await _persons(treeId).limit(batchLimit).get();
+    while (snap.docs.isNotEmpty) {
+      final deleteBatch = _firestore.batch();
+      for (final doc in snap.docs) {
+        deleteBatch.delete(doc.reference);
+      }
+      await deleteBatch.commit();
+      snap = await _persons(treeId).limit(batchLimit).get();
+    }
+
+    // 2. Write all new documents in batches of 499.
+    var batch = _firestore.batch();
+    int count = 0;
+    for (final node in nodes) {
+      final model = PersonModel.fromDomain(node);
+      batch.set(
+        _persons(treeId).doc(node.id),
+        model.toJson(),
+        SetOptions(merge: true),
+      );
+      count++;
+      if (count >= batchLimit) {
+        await batch.commit();
+        batch = _firestore.batch();
+        count = 0;
+      }
+    }
+    if (count > 0) await batch.commit();
+  }
+
   // ── Check if tree has data ─────────────────────────────────────────────────
 
   Future<bool> treeHasData(String treeId) async {

@@ -27,13 +27,11 @@ Stream<List<PersonNode>> familyTree(FamilyTreeRef ref) {
 // Seed (one-time, admin only)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Pushes the hardcoded sample data to Firestore if the tree is empty.
-/// Called once from [TreeScreen] on first admin sign-in.
+/// Forces a complete reseed of the family tree data.
+/// Wipes all existing persons and writes the full [kSeedNodes] dataset.
+/// Called from [TreeScreen.initState] so the latest data is always pushed.
 @riverpod
 Future<void> seedIfEmpty(SeedIfEmptyRef ref) async {
-  final repo    = ref.read(familyTreeRepositoryProvider);
-  final isEmpty = !(await repo.treeHasData(kTreeId));
-  if (isEmpty) {
-    await repo.seedInitialData(kTreeId, kSeedNodes);
-  }
+  final repo = ref.read(familyTreeRepositoryProvider);
+  await repo.forceSeedData(kTreeId, kSeedNodes);
 }
