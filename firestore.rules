@@ -1,0 +1,29 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── The Janvekar Family Tree ─────────────────────────────────────────────
+    //
+    // Access model (no Firebase Auth in the app):
+    //   • Everyone can READ  — the tree is a family-wide archive, no login needed.
+    //   • Everyone can WRITE — required so the app can self-seed on first launch.
+    //
+    // ⚠️  After the initial data seed is confirmed (you can see the tree), you
+    //     can lock down writes by changing the write rule below to:
+    //         allow write: if false;
+    //     From then on, all additions/edits are done via the Firebase Console,
+    //     which always bypasses security rules (admin SDK privilege).
+    // ────────────────────────────────────────────────────────────────────────
+
+    match /trees/{treeId} {
+      allow read:  if true;
+      allow write: if true;   // ← open during seeding; lock after first run
+
+      match /persons/{personId} {
+        allow read:  if true;
+        allow write: if true;  // ← open during seeding; lock after first run
+      }
+    }
+  }
+}

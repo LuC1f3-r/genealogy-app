@@ -1,29 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'theme/app_theme.dart';
+
 import 'features/tree/tree_screen.dart';
 import 'features/about/about_screen.dart';
 import 'shared/widgets/bottom_nav_bar.dart';
+import 'theme/app_theme.dart';
 
-/// Root of the application — wires theme and navigation.
+/// Root of the application — wires [ThemeData] and [GoRouter].
+/// No authentication required — the tree is publicly readable.
 class GenealogyApp extends StatelessWidget {
-  GenealogyApp({super.key});
+  const GenealogyApp({super.key});
 
-  final _router = GoRouter(
+  static final _router = GoRouter(
     initialLocation: '/tree',
     routes: [
+      // ── Main shell (tree + about with bottom nav) ──────────────────────
       ShellRoute(
         builder: (context, state, child) => _AppShell(child: child),
         routes: [
           GoRoute(
             path: '/tree',
-            pageBuilder: (context, state) => const NoTransitionPage(
+            pageBuilder: (_, __) => const NoTransitionPage(
               child: TreeScreen(),
             ),
           ),
           GoRoute(
             path: '/about',
-            pageBuilder: (context, state) => const NoTransitionPage(
+            pageBuilder: (_, __) => const NoTransitionPage(
               child: AboutScreen(),
             ),
           ),
@@ -43,10 +46,12 @@ class GenealogyApp extends StatelessWidget {
   }
 }
 
-/// Shell: holds the [BottomNavBar] and swaps screen content.
+// ─────────────────────────────────────────────────────────────────────────────
+// Shell — bottom nav bar
+// ─────────────────────────────────────────────────────────────────────────────
+
 class _AppShell extends StatelessWidget {
   const _AppShell({required this.child});
-
   final Widget child;
 
   static const _tabs = ['/tree', '/about'];
@@ -54,14 +59,16 @@ class _AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-    final currentIndex = _tabs.indexWhere((t) => location.startsWith(t));
+    final idx = _tabs.indexWhere((t) => location.startsWith(t));
 
     return Scaffold(
       body: child,
       bottomNavigationBar: AppBottomNavBar(
-        currentIndex: currentIndex < 0 ? 0 : currentIndex,
-        onTap: (index) => context.go(_tabs[index]),
+        currentIndex: idx < 0 ? 0 : idx,
+        onTap: (i) => context.go(_tabs[i]),
       ),
     );
   }
 }
+
+

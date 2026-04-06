@@ -9,20 +9,44 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  # ── Navigation ──────────────────────────────────────────────────────────
   go_router: ^14.0.0
+
+  # ── Typography ──────────────────────────────────────────────────────────
   google_fonts: ^6.2.1
   flutter_svg: ^2.0.10+1
+
+  # ── Firebase ────────────────────────────────────────────────────────────
+  firebase_core: ^3.6.0
+  cloud_firestore: ^5.4.0
+
+  # ── State management ────────────────────────────────────────────────────
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # ── Serialization ───────────────────────────────────────────────────────
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # ── Utilities ────────────────────────────────────────────────────────────
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
 
+  # ── Code generation ──────────────────────────────────────────────────────
+  build_runner: ^2.4.12
+  freezed: ^2.5.2
+  json_serializable: ^6.8.0
+  riverpod_generator: ^2.4.0
+  custom_lint: ^0.6.4
+  riverpod_lint: ^2.3.10
+
 flutter:
   uses-material-design: true
 
   assets:
     - assets/images/
-
-  # Fonts are loaded via google_fonts package at runtime.
-  # Place any local font files under assets/fonts/ if you prefer offline bundling.

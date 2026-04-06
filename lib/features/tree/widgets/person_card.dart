@@ -18,7 +18,7 @@ class PersonNode {
     required this.name,
     this.dob,
     this.dod,
-    this.birthPlace,
+    this.currentLocation,
     this.isLiving = false,
     this.photoUrl,
     this.gender = PersonGender.unknown,
@@ -39,7 +39,7 @@ class PersonNode {
   final String name;
   final String? dob;
   final String? dod;
-  final String? birthPlace;
+  final String? currentLocation;
   final bool isLiving;
   final String? photoUrl;
   final PersonGender gender;
@@ -238,10 +238,10 @@ class _PersonCardState extends State<PersonCard>
                           ),
                         ),
                       ],
-                      if (widget.person.birthPlace != null) ...[
+                      if (widget.person.currentLocation != null) ...[
                         const SizedBox(height: 2),
                         Text(
-                          widget.person.birthPlace!,
+                          widget.person.currentLocation!,
                           style: AppTextStyles.labelSm.copyWith(
                             fontSize: 8,
                             color: AppColors.outline.withValues(alpha: 0.7),
