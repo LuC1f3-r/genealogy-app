@@ -9,11 +9,11 @@ import 'person_card.dart';
 // Layout constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const double _cW   = 120.0;   // card width
-const double _cH   = 134.0;   // card height (portrait area + info area)
-const double _cGap = 50.0;    // horizontal gap between husband & wife
-const double _sGap = 60.0;    // horizontal gap between sibling subtrees
-const double _genH = 300.0;   // vertical distance between generation rows
+const double _cW   = 136.0;   // card width
+const double _cH   = 148.0;   // card height (portrait area + info area)
+const double _cGap = 64.0;    // horizontal gap between husband & wife
+const double _sGap = 120.0;   // horizontal gap between sibling subtrees
+const double _genH = 400.0;   // vertical distance between generation rows
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FamilyTreeCanvas widget
@@ -36,6 +36,9 @@ class FamilyTreeCanvas extends StatefulWidget {
 class _FamilyTreeCanvasState extends State<FamilyTreeCanvas> {
   String? _selectedId;
   bool _legendVisible = true;
+  bool _initialPositionSet = false;
+  // Initialized directly to avoid LateInitializationError on hot reload.
+  final TransformationController _transformCtrl = TransformationController();
 
   // ── Internal maps built once per layout pass ──────────────────────────────
   late Map<String, PersonNode> _nm;
@@ -43,7 +46,12 @@ class _FamilyTreeCanvasState extends State<FamilyTreeCanvas> {
   late Set<String>             _wifeIds;
   final Map<String, double>    _subtreeW = {};
 
-  // ── Init ─────────────────────────────────────────────────────────────────
+  @override
+  void dispose() {
+    _transformCtrl.dispose();
+    super.dispose();
+  }
+
   void _init() {
     _nm      = {for (final n in widget.nodes) n.id: n};
     _ids     = widget.nodes.map((n) => n.id).toSet();
@@ -112,9 +120,27 @@ class _FamilyTreeCanvasState extends State<FamilyTreeCanvas> {
   Map<String, Offset> _computeLayout() {
     _init();
 
-    // Roots: nodes with no parents in the dataset and not spouse cards.
+    // Build a set of "managed spouse" IDs: parentless nodes that are already
+    // referenced as a spouse by some other node in the dataset.  These will be
+    // placed automatically in their partner's couple-row — they must NOT be
+    // treated as independent roots.
+    final managedSpouseIds = <String>{};
+    for (final n in widget.nodes) {
+      for (final sid in n.allSpouseIds) {
+        if (!_ids.contains(sid)) continue;
+        final sp = _nm[sid];
+        if (sp == null) continue;
+        final isParentless = sp.parentIds.isEmpty ||
+            sp.parentIds.every((p) => !_ids.contains(p));
+        if (isParentless) managedSpouseIds.add(sid);
+      }
+    }
+
+    // Roots: nodes with no parents in the dataset, not wife cards, and not
+    // managed in-law spouses.
     final roots = widget.nodes.where((n) {
       if (_wifeIds.contains(n.id)) return false;
+      if (managedSpouseIds.contains(n.id)) return false;
       return n.parentIds.isEmpty || n.parentIds.every((p) => !_ids.contains(p));
     }).toList();
 
@@ -137,6 +163,10 @@ class _FamilyTreeCanvasState extends State<FamilyTreeCanvas> {
 
   void _placeSubtree(
       String manId, double left, double y, Map<String, Offset> pos) {
+    // If this node was already placed by an ancestor's subtree traversal,
+    // don't overwrite its position with a stale root-level coordinate.
+    if (pos.containsKey(manId)) return;
+
     final wives = _spousesOf(manId);
 
     if (wives.isEmpty) {
@@ -194,11 +224,41 @@ class _FamilyTreeCanvasState extends State<FamilyTreeCanvas> {
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
+  // Scroll the canvas so the topmost root node is centered horizontally
+  // and visible near the top of the screen on first render.
+  void _scrollToRoot(Map<String, Offset> layout, Size screen) {
+    // Find the node with the smallest Y (i.e. the root row).
+    Offset? rootPos = layout['main-root'];
+    if (rootPos == null) {
+      // Fallback: pick the node with the lowest Y value.
+      final minY = layout.values.map((o) => o.dy).reduce(math.min);
+      rootPos = layout.values.firstWhere((o) => o.dy == minY);
+    }
+    // Center that node horizontally; leave 80 px top padding.
+    final tx = -(rootPos.dx + _cW / 2 - screen.width / 2);
+    final ty = -(rootPos.dy - 80.0);
+    _transformCtrl.value = Matrix4.translationValues(tx, ty, 0);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final layout = _computeLayout();
+    Map<String, Offset> layout;
+    try {
+      layout = _computeLayout();
+    } catch (e, st) {
+      debugPrint('[FamilyTree] Layout error: $e\n$st');
+      return const SizedBox.shrink();
+    }
     if (layout.isEmpty) {
-      return const Center(child: Text('No family data yet.'));
+      return const SizedBox.shrink();
+    }
+
+    // On first successful render, pan the view to show the root node.
+    if (!_initialPositionSet) {
+      _initialPositionSet = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scrollToRoot(layout, MediaQuery.of(context).size);
+      });
     }
 
     final maxX = layout.values.map((o) => o.dx).reduce(math.max) + _cW + 64;
@@ -212,10 +272,12 @@ class _FamilyTreeCanvasState extends State<FamilyTreeCanvas> {
 
         // ── Pannable / zoomable tree ────────────────────────────────────
         InteractiveViewer(
+          transformationController: _transformCtrl,
           constrained: false,
           boundaryMargin: const EdgeInsets.all(double.infinity),
           minScale: 0.18,
           maxScale: 3.5,
+          scaleEnabled: true,
           child: SizedBox(
             width:  math.max(maxX, screen.width  * 1.5),
             height: math.max(maxY, screen.height * 1.5),

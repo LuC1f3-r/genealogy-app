@@ -1630,13 +1630,7 @@ class _TreeScreenState extends ConsumerState<TreeScreen> {
             Text('The Janvekar Family Tree'),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search_rounded),
-            tooltip: 'Search',
-            onPressed: () {},
-          ),
-        ],
+        actions: const [],
       ),
 
       body: treeAsync.when(
@@ -1712,11 +1706,11 @@ class _TreeSkeleton extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 32),
-          _SkeletonRow(count: 3, widths: [120, 120, 120]),
+          _SkeletonRow(count: 1, widths: [100]),
           const SizedBox(height: 56),
-          _SkeletonRow(count: 2, widths: [120, 120]),
+          _SkeletonRow(count: 2, widths: [100, 100]),
           const SizedBox(height: 56),
-          _SkeletonRow(count: 4, widths: [120, 120, 120, 120]),
+          _SkeletonRow(count: 3, widths: [100, 100, 100]),
         ],
       ),
     );
